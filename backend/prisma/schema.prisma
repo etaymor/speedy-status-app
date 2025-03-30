@@ -1,0 +1,152 @@
+// This is your Prisma schema file
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider             = "prisma-client-py"
+  recursive_type_depth = 5
+}
+
+model User {
+  id              String           @id @default(uuid())
+  email           String           @unique
+  role            UserRole
+  name            String
+  authProviderId  String?         @map("auth_provider_id")
+  createdAt       DateTime        @default(now()) @map("created_at")
+  lastActiveAt    DateTime        @updatedAt @map("last_active_at")
+  teams           TeamMembership[]
+  submissions     Submission[]
+
+  @@map("users")
+}
+
+model Team {
+  id          String           @id @default(uuid())
+  name        String
+  managerId   String          @map("manager_id")
+  promptDay   Int             @map("prompt_day") // 0-6 for Mon-Sun
+  promptTime  String          @map("prompt_time") // HH:mm format
+  timezone    String
+  createdAt   DateTime        @default(now()) @map("created_at")
+  isDeleted   Boolean         @default(false) @map("is_deleted")
+  members     TeamMembership[]
+  submissions Submission[]
+  subscription Subscription?
+  promptJobs  ScheduledPromptJob[]
+  summaries   WeeklySummary[]
+
+  @@map("teams")
+}
+
+model TeamMembership {
+  id        String       @id @default(uuid())
+  teamId    String      @map("team_id")
+  userId    String      @map("user_id")
+  status    MembershipStatus
+  team      Team        @relation(fields: [teamId], references: [id])
+  user      User        @relation(fields: [userId], references: [id])
+
+  @@unique([teamId, userId])
+  @@map("team_memberships")
+}
+
+model Submission {
+  id             String    @id @default(uuid())
+  userId         String    @map("user_id")
+  teamId         String    @map("team_id")
+  content        String    @db.Text
+  submittedAt    DateTime  @default(now()) @map("submitted_at")
+  weekStartDate  DateTime  @map("week_start_date")
+  isLate        Boolean   @default(false) @map("is_late")
+  user          User      @relation(fields: [userId], references: [id])
+  team          Team      @relation(fields: [teamId], references: [id])
+
+  @@map("submissions")
+}
+
+model Subscription {
+  id                  String    @id @default(uuid())
+  teamId              String    @unique @map("team_id")
+  stripeCustomerId    String    @map("stripe_customer_id")
+  stripeSubscriptionId String   @map("stripe_subscription_id")
+  planTier           PlanTier  @map("plan_tier")
+  status             SubscriptionStatus
+  billingStartDate   DateTime  @map("billing_start_date")
+  billingEndDate     DateTime? @map("billing_end_date")
+  trialUsed         Boolean   @default(false) @map("trial_used")
+  trialPromptSentAt DateTime? @map("trial_prompt_sent_at")
+  team              Team      @relation(fields: [teamId], references: [id])
+
+  @@map("subscriptions")
+}
+
+model ScheduledPromptJob {
+  id           String    @id @default(uuid())
+  teamId       String    @map("team_id")
+  scheduledFor DateTime  @map("scheduled_for")
+  status       JobStatus
+  channel      Channel[]
+  createdAt    DateTime  @default(now()) @map("created_at")
+  team         Team      @relation(fields: [teamId], references: [id])
+
+  @@map("scheduled_prompt_jobs")
+}
+
+model WeeklySummary {
+  id             String          @id @default(uuid())
+  teamId         String         @map("team_id")
+  weekStartDate  DateTime       @map("week_start_date")
+  summaryText    String         @db.Text @map("summary_text")
+  generatedAt    DateTime       @default(now()) @map("generated_at")
+  updatedAt      DateTime       @updatedAt @map("updated_at")
+  triggerType    TriggerType    @map("trigger_type")
+  team           Team           @relation(fields: [teamId], references: [id])
+
+  @@map("weekly_summaries")
+}
+
+enum UserRole {
+  MANAGER
+  MEMBER
+}
+
+enum MembershipStatus {
+  ACTIVE
+  REMOVED
+}
+
+enum PlanTier {
+  FREE
+  BASIC
+  PRO
+  ENTERPRISE
+}
+
+enum SubscriptionStatus {
+  TRIALING
+  ACTIVE
+  CANCELED
+}
+
+enum JobStatus {
+  PENDING
+  SENT
+  FAILED
+  CANCELED
+}
+
+enum Channel {
+  EMAIL
+  SLACK
+  PHONE
+  ALL
+}
+
+enum TriggerType {
+  ALL_SUBMITTED
+  TIMEOUT
+  MANUAL
+}

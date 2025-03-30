@@ -14,6 +14,9 @@ class AuthConfig(BaseSettings):
     REDIS_URL: str = os.getenv("REDIS_URL", "redis://localhost:6379")
     LOGIN_RATE_LIMIT: int = int(os.getenv("LOGIN_RATE_LIMIT", "5"))  # 5 attempts
     LOGIN_RATE_LIMIT_PERIOD: int = int(os.getenv("LOGIN_RATE_LIMIT_PERIOD", "300"))  # 5 minutes
+    
+    # Application URLs
+    BASE_URL: str = os.getenv("BASE_URL", "http://localhost:3000")  # Frontend URL for magic links
 
     model_config = SettingsConfigDict(
         env_file=".env",

@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .auth import auth_router
+from .auth import auth_router, magic_links_router
 from .auth.rate_limiter import setup_rate_limiter
 
 app = FastAPI(
@@ -25,6 +25,7 @@ async def startup_event():
 
 # Include routers
 app.include_router(auth_router)
+app.include_router(magic_links_router)
 
 @app.get("/health")
 async def health_check():

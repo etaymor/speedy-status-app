@@ -60,30 +60,30 @@ This checklist outlines every phase of building the Speedy Status MVP with:
     •	[x] prisma migrate dev --name init (or prisma db push)
     •	[x] Verify tables in PostgreSQL
     4.	Prisma client usage:
-    •	[ ] Generate the Python Prisma client
-    •	[ ] Test queries in a small script or route (e.g. create a User record)
+    •	[x] Generate the Python Prisma client
+    •	[x] Test queries in a small script or route (e.g. create a User record)
     5.	Optional seed script:
-    •	[ ] Create a script to insert sample data: manager user, test team, etc.
+    •	[x] Create a script to insert sample data: manager user, test team, etc.
 
 ⸻
 
 ## 🔐 Phase 3: Authentication & Authorization
 
     1.	Integrate FastAPI OAuth2:
-    •	[ ] Install fastapi-users or python-jose for JWT handling
-    •	[ ] Create routes for:
+    •	[x] Install fastapi-users or python-jose for JWT handling
+    •	[x] Create routes for:
     •	/auth/login (with username/password)
     •	/auth/token (OAuth2 token endpoint)
     •	/auth/logout
-    •	[ ] Configure OAuth2 with Password flow and Bearer token authentication
+    •	[x] Configure OAuth2 with Password flow and Bearer token authentication
     2.	Protect manager routes:
-    •	[ ] Create OAuth2 scopes for manager role
-    •	[ ] Use FastAPI dependencies with security_scopes to protect routes
-    •	[ ] Add OAuth2 bearer token validation middleware
+    •	[x] Create OAuth2 scopes for manager role
+    •	[x] Use FastAPI dependencies with security_scopes to protect routes
+    •	[x] Add OAuth2 bearer token validation middleware
     3.	Magic link for team members:
-    •	[ ] Use JWT tokens with short expiry for magic links
-    •	[ ] Create GET/POST routes at /api/v1/magic-links/{token}
-    •	[ ] Set token expiry to 72 hours with no refresh token
+    •	[x] Use JWT tokens with short expiry for magic links
+    •	[x] Create GET/POST routes at /api/v1/magic-links/{token}
+    •	[x] Set token expiry to 72 hours with no refresh token
 
 ⸻
 

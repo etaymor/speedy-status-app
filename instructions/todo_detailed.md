@@ -90,15 +90,15 @@ This checklist outlines every phase of building the Speedy Status MVP with:
 ## 📅 Phase 4: Team Setup & Configuration
 
     1.	Team creation flow:
-    •	[ ] POST /team for manager to create a new team
-    •	[ ] POST /team/members to add members by email
-    •	[ ] PUT /team/schedule to set day/time/timezone
+    •	[x] POST /team for manager to create a new team
+    •	[x] POST /team/members to add members by email
+    •	[x] PUT /team/schedule to set day/time/timezone
     2.	Prompt schedule:
-    •	[ ] Store promptDay, promptTime, timezone in the Team record
-    •	[ ] Convert local times to UTC behind the scenes
+    •	[x] Store promptDay, promptTime, timezone in the Team record
+    •	[x] Convert local times to UTC behind the scenes
     3.	Frontend integration:
-    •	[ ] Provide a basic UI in React for manager to create/edit a team
-    •	[ ] Show success or errors from the backend
+    •	[x] Provide a basic UI in React for manager to create/edit a team
+    •	[x] Show success or errors from the backend
 
 ⸻
 

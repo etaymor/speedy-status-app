@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .auth import auth_router, magic_links_router
 from .auth.rate_limiter import setup_rate_limiter
+from .routers import team
 
 app = FastAPI(
     title="Speedy Status API",
@@ -12,7 +13,7 @@ app = FastAPI(
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, replace with specific origins
+    allow_origins=["*"],  # TODO: Configure this properly for production
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -26,6 +27,7 @@ async def startup_event():
 # Include routers
 app.include_router(auth_router)
 app.include_router(magic_links_router)
+app.include_router(team.router)
 
 @app.get("/health")
 async def health_check():

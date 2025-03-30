@@ -200,3 +200,191 @@ BASE_URL="http://localhost:3000"  # Frontend URL for magic links
    - Add authentication failure monitoring
    - Track magic link usage patterns
    - Monitor rate limit hits
+
+## Team Management System
+
+### Overview
+
+The team management system uses a RESTful API design with the following key features:
+
+- Team creation and configuration
+- Member management
+- Schedule management with timezone support
+- Transactional operations for data consistency
+
+### Team Data Model
+
+```prisma
+model Team {
+    id          String           @id @default(uuid())
+    name        String
+    managerId   String          @map("manager_id")
+    promptDay   Int             @map("prompt_day")
+    promptTime  String          @map("prompt_time")
+    timezone    String
+    createdAt   DateTime        @default(now())
+    isDeleted   Boolean         @default(false)
+    members     TeamMembership[]
+    submissions Submission[]
+}
+```
+
+### API Endpoints
+
+1. Team Creation
+
+```python
+POST /api/v1/team
+{
+    "name": str,
+    "prompt_day": int,  # 0-6 (Monday-Sunday)
+    "prompt_time": str, # "HH:MM" format
+    "timezone": str     # IANA timezone format
+}
+```
+
+2. Member Management
+
+```python
+POST /api/v1/team/members
+{
+    "team_id": str,
+    "emails": List[str]
+}
+```
+
+3. Schedule Updates
+
+```python
+PUT /api/v1/team/{team_id}/schedule
+{
+    "prompt_day": int,
+    "prompt_time": str,
+    "timezone": str
+}
+```
+
+### Timezone Handling
+
+- Uses IANA timezone database for standardization
+- Stores local time + timezone rather than UTC
+- Validates timezones using zoneinfo
+- Automatically detects user's timezone in frontend
+- Provides timezone selection with complete IANA timezone list
+
+### Error Handling
+
+Custom exception class for team-related errors:
+
+```python
+class TeamError(HTTPException):
+    """Custom exception for team-related errors."""
+    def __init__(self, status_code: int, detail: str):
+        super().__init__(status_code=status_code, detail=detail)
+```
+
+Error scenarios handled:
+
+- Invalid timezone
+- Invalid time format
+- Invalid prompt day
+- Unauthorized access
+- Member addition failures
+- Transaction failures
+
+### Data Consistency
+
+- Uses transactions for member addition operations
+- Validates team access before operations
+- Ensures atomic operations for data integrity
+- Handles rollbacks on failure
+
+### Frontend Components
+
+Team setup form features:
+
+- Timezone detection and selection
+- Day/time picker with validation
+- Bulk member addition via comma-separated emails
+- Real-time validation
+- Error feedback
+- Loading states
+
+### Testing Strategy
+
+Comprehensive test suite covering:
+
+```python
+@pytest.mark.asyncio
+async def test_create_team_success()
+async def test_create_team_invalid_timezone()
+async def test_add_team_members_success()
+async def test_add_team_members_unauthorized()
+async def test_update_schedule_success()
+async def test_update_schedule_invalid_time()
+async def test_list_timezones()
+async def test_team_transaction_rollback()
+```
+
+Key test areas:
+
+- Team creation validation
+- Member addition scenarios
+- Schedule update validation
+- Timezone validation
+- Transaction rollback
+- Authorization checks
+
+### Security Considerations
+
+1. Authentication
+
+   - Required for all team management endpoints
+   - Manager-only access for team operations
+   - Token-based authentication
+
+2. Input Validation
+
+   - Pydantic models for request validation
+   - Custom validators for timezone and time format
+   - Email format validation for member addition
+
+3. Authorization
+   - Team ownership verification
+   - Operation-specific permission checks
+   - Proper error responses for unauthorized access
+
+### Performance Optimizations
+
+1. Database Operations
+
+   - Uses transactions for bulk operations
+   - Efficient member lookup and addition
+   - Proper indexing on frequently queried fields
+
+2. Frontend Optimizations
+   - Caches timezone list
+   - Debounced form submissions
+   - Optimistic UI updates
+
+### Best Practices
+
+1. Code Organization
+
+   - Separate router for team operations
+   - Custom exception handling
+   - Reusable validation functions
+   - Type hints throughout
+
+2. API Design
+
+   - RESTful endpoints
+   - Consistent error responses
+   - Clear validation messages
+   - Proper HTTP status codes
+
+3. Frontend Design
+   - Responsive layout
+   - Clear error messages
+   - Loading states
+   - User-friendly timezone selection

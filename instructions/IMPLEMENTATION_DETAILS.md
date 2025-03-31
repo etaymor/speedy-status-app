@@ -388,3 +388,105 @@ Key test areas:
    - Clear error messages
    - Loading states
    - User-friendly timezone selection
+
+## Admin API
+
+### Overview
+
+The admin API provides endpoints for monitoring and managing the application data:
+
+```python
+# Key endpoints (admin.py)
+GET /api/v1/admin/users    # Get all users with team memberships
+GET /api/v1/admin/teams    # Get all teams with members
+GET /api/v1/admin/teams/{team_id}  # Get specific team details
+```
+
+### Data Access
+
+- Users endpoint includes:
+  - Basic user information (id, email, role, name)
+  - Creation and last active timestamps
+  - Team membership details
+- Teams endpoint includes:
+  - Team configuration (name, prompt day/time, timezone)
+  - Manager association
+  - Member list with status
+
+### Security Considerations
+
+- Admin endpoints should be protected with appropriate authentication
+- Consider implementing role-based access control
+- Add rate limiting for admin endpoints
+- Implement audit logging for admin actions
+
+## Frontend Onboarding Flow
+
+### Overview
+
+The onboarding flow follows a multi-step process:
+
+1. Account Creation
+
+   - Manager registration with email/password
+   - Basic information collection
+   - Role assignment
+
+2. Team Setup
+
+   - Team name selection
+   - Schedule configuration (day/time)
+   - Timezone selection
+
+3. Member Invitation
+   - Bulk email addition
+   - Magic link generation
+   - Invitation status tracking
+
+### Implementation Details
+
+- Uses React Router for navigation
+- Maintains state using React Context
+- Implements form validation
+- Handles timezone detection and selection
+- Provides real-time feedback
+- Manages loading and error states
+
+### Environment Variables
+
+Required environment variables (updated):
+
+```bash
+# Database
+DATABASE_URL="postgresql://user:password@localhost:5432/speedy_status_db"
+
+# Authentication
+SECRET_KEY="your-secure-secret-key"
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+REFRESH_TOKEN_EXPIRE_DAYS=7
+
+# Rate Limiting
+REDIS_URL="redis://localhost:6379"
+LOGIN_RATE_LIMIT=5
+LOGIN_RATE_LIMIT_PERIOD=300
+
+# Application
+VITE_API_URL="http://localhost:7000"  # Backend API URL
+BASE_URL="http://localhost:5173"      # Frontend URL for magic links
+PORT=7000                             # Backend server port
+```
+
+### Future Considerations
+
+1. Enhanced Admin Features
+
+   - Add data export functionality
+   - Implement user impersonation
+   - Add team management capabilities
+   - Include usage analytics
+
+2. Onboarding Improvements
+   - Add team template selection
+   - Implement guided tutorials
+   - Add progress persistence
+   - Include team customization options

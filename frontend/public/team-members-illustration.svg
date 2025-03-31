@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="600" height="300" viewBox="0 0 600 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Shapes -->
+  <circle cx="300" cy="150" r="120" fill="#F3F3F3" stroke="#FDA303" stroke-width="2"/>
+  <circle cx="300" cy="150" r="80" fill="#F3F3F3" stroke="#201D1F" stroke-width="2" stroke-dasharray="4 4"/>
+  
+  <!-- Team Members -->
+  <g transform="translate(260, 110)">
+    <!-- Central Person -->
+    <circle cx="40" cy="40" r="20" fill="#201D1F"/>
+    <path d="M40 70C51.0457 70 60 78.9543 60 90C60 101.046 51.0457 110 40 110C28.9543 110 20 101.046 20 90C20 78.9543 28.9543 70 40 70Z" fill="#201D1F"/>
+    
+    <!-- Left Person -->
+    <circle cx="-40" cy="40" r="15" fill="#FDA303"/>
+    <path d="M-40 65C-31.7157 65 -25 71.7157 -25 80C-25 88.2843 -31.7157 95 -40 95C-48.2843 95 -55 88.2843 -55 80C-55 71.7157 -48.2843 65 -40 65Z" fill="#FDA303"/>
+    
+    <!-- Right Person -->
+    <circle cx="120" cy="40" r="15" fill="#FDA303"/>
+    <path d="M120 65C128.284 65 135 71.7157 135 80C135 88.2843 128.284 95 120 95C111.716 95 105 88.2843 105 80C105 71.7157 111.716 65 120 65Z" fill="#FDA303"/>
+    
+    <!-- Connection Lines -->
+    <line x1="0" y1="40" x2="20" y2="40" stroke="#201D1F" stroke-width="2"/>
+    <line x1="60" y1="40" x2="105" y2="40" stroke="#201D1F" stroke-width="2"/>
+  </g>
+  
+  <!-- Decorative Elements -->
+  <circle cx="150" cy="80" r="5" fill="#FDA303"/>
+  <circle cx="450" cy="220" r="5" fill="#FDA303"/>
+  <circle cx="180" cy="250" r="3" fill="#201D1F"/>
+  <circle cx="420" cy="50" r="3" fill="#201D1F"/>
+</svg> 

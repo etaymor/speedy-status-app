@@ -48,6 +48,11 @@ cp .env.example .env
 4. Start the development server:
 
 ```bash
+# First, ensure no existing uvicorn processes are running
+pkill -f uvicorn || true  # On Windows: taskkill /F /IM uvicorn.exe /T
+
+# Start the server from the backend directory
+cd backend  # Make sure you're in the backend directory
 uvicorn app.main:app --reload
 ```
 
@@ -63,6 +68,11 @@ npm install
 2. Start the development server:
 
 ```bash
+# First, ensure no existing vite processes are running
+pkill -f vite || true  # On Windows: taskkill /F /IM node.exe /T
+
+# Start the server from the frontend directory
+cd frontend  # Make sure you're in the frontend directory
 npm run dev
 ```
 

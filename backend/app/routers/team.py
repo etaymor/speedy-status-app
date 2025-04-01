@@ -7,11 +7,11 @@ import pytz
 from zoneinfo import ZoneInfo, available_timezones
 from typing import Optional
 
-from ..auth.dependencies import get_current_manager
+from ..auth.dependencies import get_current_manager, get_current_user
 from ..database import prisma
 from ..utils.exceptions import TeamError
 
-router = APIRouter(prefix="/api/v1/team", tags=["team"])
+router = APIRouter(prefix="/api/v1/teams", tags=["teams"])
 
 class TeamCreate(BaseModel):
     name: str
@@ -206,4 +206,29 @@ async def list_timezones():
         raise TeamError(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to fetch timezones: {str(e)}"
+        )
+
+@router.get("")
+async def get_teams(current_user = Depends(get_current_user)):
+    """Get all teams for the current user."""
+    try:
+        teams = await prisma.team.find_many(
+            where={
+                "OR": [
+                    {"managerId": current_user.id},
+                    {
+                        "members": {
+                            "some": {
+                                "userId": current_user.id
+                            }
+                        }
+                    }
+                ]
+            }
+        )
+        return teams
+    except Exception as e:
+        raise TeamError(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to fetch teams: {str(e)}"
         ) 

@@ -52,7 +52,7 @@ async def create_magic_link(
     
     # In a real implementation, we would send this link via email
     # For now, we'll just return it
-    magic_link = f"{auth_config.BASE_URL}/submit?token={token}"
+    magic_link = f"{auth_config.BASE_URL}/submit?token={token}&team_id={team_id}&user_id={user.id}&name={user.name}"
     
     return {"magic_link": magic_link}
 

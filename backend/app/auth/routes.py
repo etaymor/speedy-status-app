@@ -161,7 +161,7 @@ async def register(
                     await transaction.teammembership.create(data={
                         "teamId": team.id,
                         "userId": member_user.id,
-                        "status": "PENDING"
+                        "status": "ACTIVE"
                     })
             except Exception as tx_error:
                 logger.error(f"Transaction error: {str(tx_error)}", exc_info=True)

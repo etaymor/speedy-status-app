@@ -2,6 +2,7 @@ import { RouteObject, Navigate, Link } from "react-router-dom";
 import { OnboardingFlow } from "../components/onboarding/OnboardingFlow";
 import { ThankYou } from "../components/onboarding/ThankYou";
 import { OnboardingProvider } from "../context/OnboardingContext";
+import { SubmissionForm } from "../components/SubmissionForm";
 
 // Layout components
 const MainLayout = ({ children }: { children: React.ReactNode }) => (
@@ -53,6 +54,17 @@ const HomePage = () => (
   </div>
 );
 
+// Success page after submission
+const SubmissionSuccess = () => (
+  <div className="flex flex-col items-center justify-center min-h-[60vh]">
+    <h1 className="text-4xl font-bold text-[#201D1F] mb-4">Thank you!</h1>
+    <p className="text-gray-600 text-center max-w-md">
+      Your status update has been submitted successfully. You can close this
+      window now.
+    </p>
+  </div>
+);
+
 // Routes configuration
 export const routes: RouteObject[] = [
   {
@@ -80,6 +92,24 @@ export const routes: RouteObject[] = [
     ),
   },
   {
+    path: "/submit",
+    element: (
+      <MainLayout>
+        <SubmissionForm
+          onSubmitSuccess={() => (window.location.href = "/submit/success")}
+        />
+      </MainLayout>
+    ),
+  },
+  {
+    path: "/submit/success",
+    element: (
+      <MainLayout>
+        <SubmissionSuccess />
+      </MainLayout>
+    ),
+  },
+  {
     path: "/dashboard",
     element: (
       <ProtectedRoute>
@@ -88,5 +118,9 @@ export const routes: RouteObject[] = [
         </MainLayout>
       </ProtectedRoute>
     ),
+  },
+  {
+    path: "*",
+    element: <Navigate to="/" replace />,
   },
 ];

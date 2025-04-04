@@ -1,8 +1,10 @@
 import pytest
 import pytest_asyncio
 from fastapi.testclient import TestClient
+from jose import jwt
 from app.main import app
 from app.auth.utils import get_password_hash
+from app.auth.config import auth_config
 from prisma import Prisma
 
 client = TestClient(app)
@@ -86,15 +88,74 @@ async def test_create_magic_link(setup_test_data):
     assert response.status_code == 200
     data = response.json()
     assert "magic_link" in data
-    assert data["magic_link"].startswith("http://")
     assert "token=" in data["magic_link"]
+    # Verify URL only contains token
+    assert "&" not in data["magic_link"]
+    assert "team_id=" not in data["magic_link"]
+    assert "user_id=" not in data["magic_link"]
+    
+    # Verify token contains correct data
+    token = data["magic_link"].split("token=")[1]
+    payload = jwt.decode(token, auth_config.SECRET_KEY, algorithms=[auth_config.ALGORITHM])
+    assert payload["sub"] == member.id
+    assert payload["team_id"] == team.id
+    assert payload["type"] == "magic-link"
 
 @pytest.mark.asyncio
-async def test_create_magic_link_invalid_user(setup_test_data):
+async def test_create_magic_link_new_user(setup_test_data):
     team = setup_test_data["team"]
+    new_email = "new@example.com"
     
-    response = client.post(f"/api/v1/magic-links/{team.id}/nonexistent@example.com")
+    # Create team membership for new user
+    prisma = Prisma()
+    await prisma.connect()
+    
+    # Create team membership
+    new_user = await prisma.user.create({
+        "email": new_email,
+        "name": "new",  # Should be derived from email
+        "role": "MEMBER"
+    })
+    await prisma.teammembership.create({
+        "teamId": team.id,
+        "userId": new_user.id,
+        "status": "ACTIVE"
+    })
+    
+    response = client.post(f"/api/v1/magic-links/{team.id}/{new_email}")
+    assert response.status_code == 200
+    data = response.json()
+    assert "magic_link" in data
+    assert "token=" in data["magic_link"]
+    assert "name=" not in data["magic_link"]
+    
+    await prisma.disconnect()
+
+@pytest.mark.asyncio
+async def test_create_magic_link_inactive_member(setup_test_data):
+    team = setup_test_data["team"]
+    member = setup_test_data["member"]
+    
+    # Set member status to inactive
+    prisma = Prisma()
+    await prisma.connect()
+    await prisma.teammembership.update(
+        where={
+            "teamId_userId": {
+                "teamId": team.id,
+                "userId": member.id
+            }
+        },
+        data={
+            "status": "REMOVED"
+        }
+    )
+    
+    response = client.post(f"/api/v1/magic-links/{team.id}/{member.email}")
     assert response.status_code == 404
+    assert response.json()["detail"] == "User not found in team"
+    
+    await prisma.disconnect()
 
 @pytest.mark.asyncio
 async def test_verify_magic_link(setup_test_data):
@@ -112,6 +173,44 @@ async def test_verify_magic_link(setup_test_data):
     data = verify_response.json()
     assert "access_token" in data
     assert data["token_type"] == "bearer"
+    
+    # Verify access token contains correct data
+    payload = jwt.decode(data["access_token"], auth_config.SECRET_KEY, algorithms=[auth_config.ALGORITHM])
+    assert payload["sub"] == member.id
+    assert payload["team_id"] == team.id
+    assert payload["type"] == "access"
+
+@pytest.mark.asyncio
+async def test_verify_magic_link_inactive_member(setup_test_data):
+    team = setup_test_data["team"]
+    member = setup_test_data["member"]
+    
+    # First create a magic link
+    create_response = client.post(f"/api/v1/magic-links/{team.id}/{member.email}")
+    magic_link = create_response.json()["magic_link"]
+    token = magic_link.split("token=")[1]
+    
+    # Set member status to inactive
+    prisma = Prisma()
+    await prisma.connect()
+    await prisma.teammembership.update(
+        where={
+            "teamId_userId": {
+                "teamId": team.id,
+                "userId": member.id
+            }
+        },
+        data={
+            "status": "REMOVED"
+        }
+    )
+    
+    # Verify the magic link should fail
+    verify_response = client.get(f"/api/v1/magic-links/{token}")
+    assert verify_response.status_code == 404
+    assert verify_response.json()["detail"] == "User not found in team"
+    
+    await prisma.disconnect()
 
 @pytest.mark.asyncio
 async def test_verify_invalid_magic_link():

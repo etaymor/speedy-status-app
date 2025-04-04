@@ -43,6 +43,117 @@ ALGORITHM: str = "HS256"
 }
 ```
 
+#### Magic Link Flow
+
+1. **Creation**:
+
+   - If user doesn't exist, creates new user with MEMBER role
+   - Default name is derived from email (part before @)
+   - Verifies active team membership
+   - Generates JWT token with user and team info
+   - Returns magic link URL with token
+
+2. **Verification**:
+
+   - Validates token signature and expiration
+   - Checks token type is "magic-link"
+   - Verifies user exists and has active team membership
+   - Issues short-lived access token (30 minutes)
+   - Returns access token for API authentication
+
+3. **Error Handling**:
+   - Invalid token format: "Not enough segments"
+   - Expired token: "Magic link has expired"
+   - Invalid membership: "User or team membership not valid"
+   - Invalid token type: "Invalid token type"
+
+### Testing Magic Links
+
+#### Test Script Usage
+
+The `generate_test_link.py` script provides a reliable way to test magic links:
+
+```python
+# Required packages
+pip install python-dotenv prisma python-jose
+
+# Script features
+- Uses environment SECRET_KEY for token signing
+- Creates/finds test user (test@example.com)
+- Creates/finds test team
+- Ensures active team membership
+- Generates valid magic link token
+```
+
+#### Test Data Creation
+
+```python
+# Test user creation
+test_user = await prisma.user.create(data={
+    "email": "test@example.com",
+    "name": "Test User",
+    "role": "MEMBER"
+})
+
+# Test team creation
+test_team = await prisma.team.create(data={
+    "name": "Test Team",
+    "managerId": test_user.id,
+    "promptDay": 1,
+    "promptTime": "09:00",
+    "timezone": "UTC"
+})
+
+# Team membership creation
+await prisma.teammembership.create(data={
+    "userId": test_user.id,
+    "teamId": test_team.id,
+    "status": "ACTIVE"
+})
+```
+
+#### Token Generation
+
+```python
+# Generate magic link token
+token = jwt.encode(
+    {
+        'sub': test_user.id,
+        'team_id': test_team.id,
+        'type': 'magic-link',
+        'exp': int(time.time()) + 3600  # 1 hour expiry
+    },
+    SECRET_KEY,
+    algorithm='HS256'
+)
+```
+
+#### Testing Considerations
+
+1. **Database State**:
+
+   - Ensure test user exists
+   - Verify team membership is ACTIVE
+   - Check team configuration is valid
+
+2. **Token Validation**:
+
+   - Verify token format is correct
+   - Check expiration time is appropriate
+   - Validate token payload structure
+
+3. **Error Scenarios**:
+
+   - Test with expired tokens
+   - Test with inactive memberships
+   - Test with invalid token formats
+   - Test with non-existent users/teams
+
+4. **Integration Testing**:
+   - Verify frontend token handling
+   - Check submission flow works
+   - Validate error message display
+
 ### Token Types
 
 1. Access Token

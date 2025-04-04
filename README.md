@@ -86,3 +86,41 @@ npm run dev
 
 - Backend tests: `cd backend && pytest`
 - Frontend tests: `cd frontend && npm test`
+
+## Generating Test Magic Links
+
+To test the application with magic links, you can use the provided script:
+
+1. Install required packages:
+
+```bash
+pip install python-dotenv prisma python-jose
+```
+
+2. Create a test magic link:
+
+```bash
+python generate_test_link.py
+```
+
+This script will:
+
+- Create a test user with email "test@example.com" if it doesn't exist
+- Create a test team if it doesn't exist
+- Create an active team membership linking the user to the team
+- Generate a magic link token that's valid for 1 hour
+
+The script will output:
+
+- Test user details (ID, email)
+- Test team ID
+- A magic link URL you can use for testing
+
+3. Using the magic link:
+
+- Make sure both backend and frontend servers are running
+- Copy the generated magic link URL
+- Open it in your browser
+- You should be automatically logged in and redirected to the submission page
+
+Note: Each magic link is valid for 1 hour. If you need a new link, simply run the script again.

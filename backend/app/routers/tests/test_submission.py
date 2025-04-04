@@ -9,6 +9,8 @@ from app.auth.utils import create_token
 from app.routers.submission import router
 from app.database import prisma
 from prisma.enums import UserRole, MembershipStatus, JobStatus, Channel
+from ...main import app
+from ...auth.utils import create_access_token
 
 # Setup test app
 app = FastAPI()
@@ -268,4 +270,106 @@ async def test_invalid_team_id(
     )
 
     assert response.status_code == 404
-    assert "Team not found" in response.json()["detail"] 
+    assert "Team not found" in response.json()["detail"]
+
+@pytest.fixture
+def test_client():
+    return TestClient(app)
+
+@pytest.fixture
+def auth_headers():
+    token = create_access_token(
+        data={"sub": "test_user", "team_id": "test_team", "type": "access"}
+    )
+    return {"Authorization": f"Bearer {token}"}
+
+async def test_submission_rate_limit(test_client, auth_headers):
+    """Test that submission endpoint enforces rate limits."""
+    submission_data = {
+        "content": "Test status update",
+        "team_id": "test_team",
+        "user_id": "test_user"
+    }
+
+    # Make 6 requests (rate limit is 5 per minute)
+    responses = []
+    for _ in range(6):
+        response = test_client.post(
+            "/api/v1/submissions",
+            json=submission_data,
+            headers=auth_headers
+        )
+        responses.append(response)
+        await asyncio.sleep(0.1)  # Small delay between requests
+
+    # First 5 should succeed
+    for response in responses[:5]:
+        assert response.status_code == 201, "First 5 requests should succeed"
+
+    # 6th should fail with rate limit error
+    assert responses[5].status_code == 429, "6th request should be rate limited"
+    assert "Too Many Requests" in responses[5].json()["detail"]
+
+async def test_edit_rate_limit(test_client, auth_headers):
+    """Test that edit endpoint enforces rate limits."""
+    # First create a submission
+    submission_data = {
+        "content": "Initial content",
+        "team_id": "test_team",
+        "user_id": "test_user"
+    }
+    create_response = test_client.post(
+        "/api/v1/submissions",
+        json=submission_data,
+        headers=auth_headers
+    )
+    assert create_response.status_code == 201
+    submission_id = create_response.json()["id"]
+
+    # Make 11 edit requests (rate limit is 10 per minute)
+    update_data = {"content": "Updated content"}
+    responses = []
+    for _ in range(11):
+        response = test_client.put(
+            f"/api/v1/submissions/{submission_id}",
+            json=update_data,
+            headers=auth_headers
+        )
+        responses.append(response)
+        await asyncio.sleep(0.1)  # Small delay between requests
+
+    # First 10 should succeed
+    for response in responses[:10]:
+        assert response.status_code == 200, "First 10 requests should succeed"
+
+    # 11th should fail with rate limit error
+    assert responses[10].status_code == 429, "11th request should be rate limited"
+    assert "Too Many Requests" in responses[10].json()["detail"]
+
+async def test_rate_limit_resets(test_client, auth_headers):
+    """Test that rate limits reset after the time window."""
+    submission_data = {
+        "content": "Test status update",
+        "team_id": "test_team",
+        "user_id": "test_user"
+    }
+
+    # Make 5 requests (hitting the limit)
+    for _ in range(5):
+        response = test_client.post(
+            "/api/v1/submissions",
+            json=submission_data,
+            headers=auth_headers
+        )
+        assert response.status_code == 201
+
+    # Wait for rate limit window to expire (61 seconds)
+    await asyncio.sleep(61)
+
+    # Should be able to make another request
+    response = test_client.post(
+        "/api/v1/submissions",
+        json=submission_data,
+        headers=auth_headers
+    )
+    assert response.status_code == 201, "Should be able to submit after rate limit window" 

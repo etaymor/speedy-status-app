@@ -43,6 +43,117 @@ ALGORITHM: str = "HS256"
 }
 ```
 
+#### Magic Link Flow
+
+1. **Creation**:
+
+   - If user doesn't exist, creates new user with MEMBER role
+   - Default name is derived from email (part before @)
+   - Verifies active team membership
+   - Generates JWT token with user and team info
+   - Returns magic link URL with token
+
+2. **Verification**:
+
+   - Validates token signature and expiration
+   - Checks token type is "magic-link"
+   - Verifies user exists and has active team membership
+   - Issues short-lived access token (30 minutes)
+   - Returns access token for API authentication
+
+3. **Error Handling**:
+   - Invalid token format: "Not enough segments"
+   - Expired token: "Magic link has expired"
+   - Invalid membership: "User or team membership not valid"
+   - Invalid token type: "Invalid token type"
+
+### Testing Magic Links
+
+#### Test Script Usage
+
+The `generate_test_link.py` script provides a reliable way to test magic links:
+
+```python
+# Required packages
+pip install python-dotenv prisma python-jose
+
+# Script features
+- Uses environment SECRET_KEY for token signing
+- Creates/finds test user (test@example.com)
+- Creates/finds test team
+- Ensures active team membership
+- Generates valid magic link token
+```
+
+#### Test Data Creation
+
+```python
+# Test user creation
+test_user = await prisma.user.create(data={
+    "email": "test@example.com",
+    "name": "Test User",
+    "role": "MEMBER"
+})
+
+# Test team creation
+test_team = await prisma.team.create(data={
+    "name": "Test Team",
+    "managerId": test_user.id,
+    "promptDay": 1,
+    "promptTime": "09:00",
+    "timezone": "UTC"
+})
+
+# Team membership creation
+await prisma.teammembership.create(data={
+    "userId": test_user.id,
+    "teamId": test_team.id,
+    "status": "ACTIVE"
+})
+```
+
+#### Token Generation
+
+```python
+# Generate magic link token
+token = jwt.encode(
+    {
+        'sub': test_user.id,
+        'team_id': test_team.id,
+        'type': 'magic-link',
+        'exp': int(time.time()) + 3600  # 1 hour expiry
+    },
+    SECRET_KEY,
+    algorithm='HS256'
+)
+```
+
+#### Testing Considerations
+
+1. **Database State**:
+
+   - Ensure test user exists
+   - Verify team membership is ACTIVE
+   - Check team configuration is valid
+
+2. **Token Validation**:
+
+   - Verify token format is correct
+   - Check expiration time is appropriate
+   - Validate token payload structure
+
+3. **Error Scenarios**:
+
+   - Test with expired tokens
+   - Test with inactive memberships
+   - Test with invalid token formats
+   - Test with non-existent users/teams
+
+4. **Integration Testing**:
+   - Verify frontend token handling
+   - Check submission flow works
+   - Validate error message display
+
 ### Token Types
 
 1. Access Token
@@ -388,3 +499,105 @@ Key test areas:
    - Clear error messages
    - Loading states
    - User-friendly timezone selection
+
+## Admin API
+
+### Overview
+
+The admin API provides endpoints for monitoring and managing the application data:
+
+```python
+# Key endpoints (admin.py)
+GET /api/v1/admin/users    # Get all users with team memberships
+GET /api/v1/admin/teams    # Get all teams with members
+GET /api/v1/admin/teams/{team_id}  # Get specific team details
+```
+
+### Data Access
+
+- Users endpoint includes:
+  - Basic user information (id, email, role, name)
+  - Creation and last active timestamps
+  - Team membership details
+- Teams endpoint includes:
+  - Team configuration (name, prompt day/time, timezone)
+  - Manager association
+  - Member list with status
+
+### Security Considerations
+
+- Admin endpoints should be protected with appropriate authentication
+- Consider implementing role-based access control
+- Add rate limiting for admin endpoints
+- Implement audit logging for admin actions
+
+## Frontend Onboarding Flow
+
+### Overview
+
+The onboarding flow follows a multi-step process:
+
+1. Account Creation
+
+   - Manager registration with email/password
+   - Basic information collection
+   - Role assignment
+
+2. Team Setup
+
+   - Team name selection
+   - Schedule configuration (day/time)
+   - Timezone selection
+
+3. Member Invitation
+   - Bulk email addition
+   - Magic link generation
+   - Invitation status tracking
+
+### Implementation Details
+
+- Uses React Router for navigation
+- Maintains state using React Context
+- Implements form validation
+- Handles timezone detection and selection
+- Provides real-time feedback
+- Manages loading and error states
+
+### Environment Variables
+
+Required environment variables (updated):
+
+```bash
+# Database
+DATABASE_URL="postgresql://user:password@localhost:5432/speedy_status_db"
+
+# Authentication
+SECRET_KEY="your-secure-secret-key"
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+REFRESH_TOKEN_EXPIRE_DAYS=7
+
+# Rate Limiting
+REDIS_URL="redis://localhost:6379"
+LOGIN_RATE_LIMIT=5
+LOGIN_RATE_LIMIT_PERIOD=300
+
+# Application
+VITE_API_URL="http://localhost:7000"  # Backend API URL
+BASE_URL="http://localhost:5173"      # Frontend URL for magic links
+PORT=7000                             # Backend server port
+```
+
+### Future Considerations
+
+1. Enhanced Admin Features
+
+   - Add data export functionality
+   - Implement user impersonation
+   - Add team management capabilities
+   - Include usage analytics
+
+2. Onboarding Improvements
+   - Add team template selection
+   - Implement guided tutorials
+   - Add progress persistence
+   - Include team customization options

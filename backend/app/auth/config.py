@@ -16,7 +16,7 @@ class AuthConfig(BaseSettings):
     LOGIN_RATE_LIMIT_PERIOD: int = int(os.getenv("LOGIN_RATE_LIMIT_PERIOD", "300"))  # 5 minutes
     
     # Application URLs
-    BASE_URL: str = os.getenv("BASE_URL", "http://localhost:3000")  # Frontend URL for magic links
+    BASE_URL: str = os.getenv("BASE_URL", "http://localhost:5174")  # Frontend URL for magic links
 
     model_config = SettingsConfigDict(
         env_file=".env",

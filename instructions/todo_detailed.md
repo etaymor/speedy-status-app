@@ -122,7 +122,7 @@ This checklist outlines every phase of building the Speedy Status MVP with:
 ## ✍️ Phase 6: Submission System
 
     1.	Submission API:
-    •	[ ] POST /api/v1/submissions
+    •	[x] POST /api/v1/submissions
     •	Validates token (if magic link) or Slack/Twilio signature
     •	Saves submission with userId, teamId, content
     •	Marks is_late if after schedule deadline

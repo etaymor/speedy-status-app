@@ -115,6 +115,7 @@ enum UserRole {
 }
 
 enum MembershipStatus {
+  PENDING
   ACTIVE
   REMOVED
 }

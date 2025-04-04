@@ -1,0 +1,26 @@
+<svg width="500" height="400" viewBox="0 0 500 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .team-illustration {
+      stroke: #201D1F;
+      stroke-width: 2;
+      fill: none;
+    }
+  </style>
+  <path class="team-illustration" d="M250 50 C 100 50, 50 200, 50 350 C 50 380, 450 380, 450 350 C 450 200, 400 50, 250 50" />
+  <!-- Row 1 -->
+  <circle class="team-illustration" cx="150" cy="100" r="30" />
+  <circle class="team-illustration" cx="250" cy="100" r="30" />
+  <circle class="team-illustration" cx="350" cy="100" r="30" />
+  <!-- Row 2 -->
+  <circle class="team-illustration" cx="100" cy="180" r="30" />
+  <circle class="team-illustration" cx="200" cy="180" r="30" />
+  <circle class="team-illustration" cx="300" cy="180" r="30" />
+  <circle class="team-illustration" cx="400" cy="180" r="30" />
+  <!-- Row 3 -->
+  <circle class="team-illustration" cx="150" cy="260" r="30" />
+  <circle class="team-illustration" cx="250" cy="260" r="30" />
+  <circle class="team-illustration" cx="350" cy="260" r="30" />
+  <!-- Row 4 -->
+  <circle class="team-illustration" cx="200" cy="340" r="30" />
+  <circle class="team-illustration" cx="300" cy="340" r="30" />
+</svg> 

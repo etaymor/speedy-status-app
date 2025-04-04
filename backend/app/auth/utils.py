@@ -1,8 +1,9 @@
 from datetime import datetime, timedelta, UTC
-from typing import Optional
-from jose import jwt
+from typing import Optional, Dict, Any
+from jose import jwt, JWTError
 from passlib.context import CryptContext
 from .config import auth_config, ACCESS_TOKEN_EXPIRE, REFRESH_TOKEN_EXPIRE
+from fastapi import HTTPException, status
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -23,6 +24,22 @@ def create_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
         to_encode, auth_config.SECRET_KEY, algorithm=auth_config.ALGORITHM
     )
     return encoded_jwt
+
+def decode_token(token: str) -> Dict[str, Any]:
+    """Decode and verify a JWT token."""
+    try:
+        payload = jwt.decode(
+            token,
+            auth_config.SECRET_KEY,
+            algorithms=[auth_config.ALGORITHM]
+        )
+        return payload
+    except JWTError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate token",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
 
 def create_access_token(user_id: str) -> str:
     return create_token(

@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 from pydantic import BaseModel, EmailStr
 
 class Token(BaseModel):
@@ -8,6 +8,22 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     user_id: str
+
+class TeamMember(BaseModel):
+    email: EmailStr
+    fullName: str
+
+class TeamData(BaseModel):
+    name: str
+    promptDay: int
+    promptTime: str
+    timezone: str
+    members: List[TeamMember]
+
+class UserRegistration(BaseModel):
+    email: EmailStr
+    password: str
+    team: TeamData
 
 class UserLogin(BaseModel):
     email: EmailStr

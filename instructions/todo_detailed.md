@@ -127,32 +127,49 @@ This checklist outlines every phase of building the Speedy Status MVP with:
     •	Saves submission with userId, teamId, content
     •	Marks is_late if after schedule deadline
     2.	Frontend submission form (for email link):
-    •	[ ] Minimal page that appears when user clicks magic link
-    •	[ ] Textarea for status update
-    •	[ ] Submit to /api/v1/submissions with the token
+    •	[x] Minimal page that appears when user clicks magic link
+    •	[x] Textarea for status update
+    •	[x] Submit to /api/v1/submissions with the token
     3.	Allow edits:
-    •	[ ] Decide if users can resubmit until manager's summary is generated
-    •	[ ] Store or overwrite existing submissions
+    •	[x] Decide if users can resubmit until manager's summary is generated
+    •	[x] Store or overwrite existing submissions
 
 ⸻
 
 ## 🤖 Phase 7: AI Summary Generation
 
     1.	AI integration:
-    •	[ ] Use GPT-like model or "GPT-4o-mini" (stub or real)
-    •	[ ] Prompt template for summarizing weekly updates
-    •	[ ] Save result in WeeklySummary with generatedAt
+    •	[x] Use OpenAI  "GPT-4o-mini" (real)
+    •	[x] Prompt template for summarizing weekly updates
+    •	[x] Save result in WeeklySummary with generatedAt
     2.	Trigger conditions:
-    •	[ ] Generate summary automatically once all members submit
-    •	OR [ ] Generate summary after a 24-hour grace period from the scheduled time
-    •	[ ] Manual trigger: /api/v1/summaries/generate for manager to force summary
+    •	[x] Generate summary automatically once all members submit
+    •	[x] Generate summary after a 24-hour grace period from the scheduled time
+    •	[x] Manual trigger: /api/v1/summaries/generate for manager to force summary
     3.	Regeneration on late updates:
-    •	[ ] If late submission arrives, re-run summary logic
-    •	[ ] Overwrite previous text or store versioning
+    •	[x] If late submission arrives, re-run summary logic
+    •	[x] Overwrite previous text
 
 ⸻
 
-## 📧 Phase 8: Multi-Channel Notifications
+## 🏷 Phase 8: Manager Dashboard
+
+    1.	Dashboard APIs:
+    •	[ ] GET /api/v1/teams/{teamId}/dashboard
+    •	Returns team info, submissions, summary
+    •	[ ] PUT /api/v1/teams/{teamId}/dashboard (if editing schedule or members)
+    2.	React dashboard:
+    •	[ ] Route: /dashboard
+    •	[ ] List all teams the manager has
+    •	[ ] Display each team's weekly status, who submitted, who hasn't
+    •	[ ] View or regenerate summary
+    3.	Resend prompt & reminders:
+    •	[ ] Button to resend prompt to non-responders
+    •	[ ] Confirm or success message after
+
+---
+
+## 📧 Phase 9: Multi-Channel Notifications
 
     1.	Email prompt system:
     •	[ ] Setup an email service (SendGrid, SMTP, etc.)
@@ -168,23 +185,6 @@ This checklist outlines every phase of building the Speedy Status MVP with:
     •	[ ] Transcribe and store as submission
     4.	Reminders:
     •	[ ] If user hasn't submitted by X time, send a reminder DM/email/call
-
-⸻
-
-## 🏷 Phase 9: Manager Dashboard
-
-    1.	Dashboard APIs:
-    •	[ ] GET /api/v1/teams/{teamId}/dashboard
-    •	Returns team info, submissions, summary
-    •	[ ] PUT /api/v1/teams/{teamId}/dashboard (if editing schedule or members)
-    2.	React dashboard:
-    •	[ ] Route: /dashboard
-    •	[ ]] List all teams the manager has
-    •	[ ] Display each team's weekly status, who submitted, who hasn't
-    •	[ ] View or regenerate summary
-    3.	Resend prompt & reminders:
-    •	[ ] Button to resend prompt to non-responders
-    •	[ ] Confirm or success message after
 
 ⸻
 

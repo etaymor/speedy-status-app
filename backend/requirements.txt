@@ -12,4 +12,4 @@ python-multipart>=0.0.9
 celery>=5.3.6
 redis>=5.0.2
 httpx>=0.27.0  # For testing
-openai>=1.12.0  # For AI summary generation 
+openai>=1.13.3  # For AI summary generation 

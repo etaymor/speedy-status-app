@@ -29,7 +29,7 @@ A modern team status update management system built with FastAPI and React.
 
 ```bash
 cd backend
-python -m venv venv
+python3 -m venv venv
 source venv/bin/activate  # On Windows: .\venv\Scripts\activate
 ```
 
@@ -100,7 +100,7 @@ pip install python-dotenv prisma python-jose
 2. Create a test magic link:
 
 ```bash
-python generate_test_link.py
+python3 generate_test_link.py
 ```
 
 This script will:

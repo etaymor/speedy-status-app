@@ -5,15 +5,15 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class AuthConfig(BaseSettings):
     SECRET_KEY: str = os.getenv("SECRET_KEY")
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES"))
-    REFRESH_TOKEN_EXPIRE_DAYS: int = int(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS"))
-    ALGORITHM: str = os.getenv("JWT_ALGORITHM")
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
+    REFRESH_TOKEN_EXPIRE_DAYS: int = int(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS", "7"))
+    ALGORITHM: str = os.getenv("JWT_ALGORITHM", "HS256")
     TOKEN_URL: str = os.getenv("TOKEN_URL")
     
     # Rate limiting settings
     REDIS_URL: str = os.getenv("REDIS_URL")
-    LOGIN_RATE_LIMIT: int = int(os.getenv("LOGIN_RATE_LIMIT"))
-    LOGIN_RATE_LIMIT_PERIOD: int = int(os.getenv("LOGIN_RATE_LIMIT_PERIOD"))
+    LOGIN_RATE_LIMIT: int = int(os.getenv("LOGIN_RATE_LIMIT", "5"))
+    LOGIN_RATE_LIMIT_PERIOD: int = int(os.getenv("LOGIN_RATE_LIMIT_PERIOD", "300"))
     
     # Application URLs
     BASE_URL: str = os.getenv("BASE_URL")

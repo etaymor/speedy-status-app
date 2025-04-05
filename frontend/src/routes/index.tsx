@@ -4,6 +4,10 @@ import { ThankYou } from "../components/onboarding/ThankYou";
 import { OnboardingProvider } from "../context/OnboardingContext";
 import { SubmissionForm } from "../components/SubmissionForm";
 import { SubmissionList } from "../components/SubmissionList";
+import { Dashboard } from "../components/Dashboard";
+import { TeamDashboard } from "../components/TeamDashboard";
+import { Login } from "../components/Login";
+import { CreateTeam } from "../components/CreateTeam";
 import { useState } from "react";
 
 // Layout components
@@ -32,29 +36,43 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 };
 
 // Home page component
-const HomePage = () => (
-  <div className="px-4 py-6 sm:px-0">
-    <div className="bg-white overflow-hidden shadow rounded-lg">
-      <div className="px-4 py-5 sm:p-6">
-        <h2 className="text-lg font-medium text-gray-900">
-          Welcome to your team status management system
-        </h2>
-        <p className="mt-1 text-sm text-gray-500">
-          Get started by creating your first team or checking your existing
-          teams' status updates.
-        </p>
-        <div className="mt-4">
-          <Link
-            to="/onboarding"
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-[#201D1F] hover:bg-[#2c2a2c] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#201D1F]"
-          >
-            Create Team
-          </Link>
+const HomePage = () => {
+  const isLoggedIn = localStorage.getItem("accessToken") !== null;
+
+  if (isLoggedIn) {
+    return <Navigate to="/dashboard" />;
+  }
+
+  return (
+    <div className="px-4 py-6 sm:px-0">
+      <div className="bg-white overflow-hidden shadow rounded-lg">
+        <div className="px-4 py-5 sm:p-6">
+          <h2 className="text-lg font-medium text-gray-900">
+            Welcome to your team status management system
+          </h2>
+          <p className="mt-1 text-sm text-gray-500">
+            Get started by creating your first team or checking your existing
+            teams' status updates.
+          </p>
+          <div className="mt-4 flex gap-2">
+            <Link
+              to="/onboarding"
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-[#201D1F] hover:bg-[#2c2a2c] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#201D1F]"
+            >
+              Create Team
+            </Link>
+            <Link
+              to="/login"
+              className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+            >
+              Login
+            </Link>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 // Success page after submission
 const SubmissionSuccess = () => {
@@ -214,7 +232,35 @@ export const routes: RouteObject[] = [
     element: (
       <ProtectedRoute>
         <MainLayout>
-          <Navigate to="/" />
+          <Dashboard />
+        </MainLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/dashboard/:teamId",
+    element: (
+      <ProtectedRoute>
+        <MainLayout>
+          <TeamDashboard />
+        </MainLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/login",
+    element: (
+      <MainLayout>
+        <Login />
+      </MainLayout>
+    ),
+  },
+  {
+    path: "/create-team",
+    element: (
+      <ProtectedRoute>
+        <MainLayout>
+          <CreateTeam />
         </MainLayout>
       </ProtectedRoute>
     ),

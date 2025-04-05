@@ -2,13 +2,17 @@ from jose import jwt
 import time
 import os
 import uuid
+from dotenv import load_dotenv
 
 # Generate some test UUIDs for user and team
 test_user_id = str(uuid.uuid4())
 test_team_id = str(uuid.uuid4())
 
 # Use the same secret key as your application
-SECRET_KEY = "your-secret-key-for-jwt"  # This should match your backend's SECRET_KEY
+
+load_dotenv()
+
+SECRET_KEY = os.getenv("SECRET_KEY")  # Load from environment variables
 
 # Create a test token with all necessary data
 token = jwt.encode(

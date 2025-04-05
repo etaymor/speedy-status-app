@@ -44,4 +44,4 @@ yarn-error.log*
 # Project specific
 *.log
 .coverage
-htmlcov/ 
+instructions/IMPLEMENTATION_DETAILS.md

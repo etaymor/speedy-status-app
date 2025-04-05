@@ -2,17 +2,40 @@ import time
 from typing import List
 import os
 import asyncio
-from openai import AsyncOpenAI
+import logging
+from openai import AsyncOpenAI, version
+import httpx
 from ..config import get_settings
 from datetime import datetime
 from prisma.models import Submission
 
 settings = get_settings()
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 class AIService:
     def __init__(self):
         """Initialize the AI service with OpenAI client."""
-        self.client = AsyncOpenAI(api_key=settings.openai_api_key)
+        logger.debug(f"OpenAI Version: {version}")
+        logger.debug(f"HTTPX Version: {httpx.__version__}")
+        logger.debug(f"Proxy Environment Variables: HTTP_PROXY={os.getenv('HTTP_PROXY')}, HTTPS_PROXY={os.getenv('HTTPS_PROXY')}")
+        
+        try:
+            # Create custom HTTP client without proxy settings
+            http_client = httpx.AsyncClient(
+                timeout=httpx.Timeout(60.0),
+                follow_redirects=True
+            )
+            
+            self.client = AsyncOpenAI(
+                api_key=settings.openai_api_key,
+                http_client=http_client
+            )
+            logger.debug("OpenAI client initialized successfully")
+        except Exception as e:
+            logger.error(f"Error initializing OpenAI client: {str(e)}")
+            raise
+            
         self.model = "gpt-4o-mini"
         self.max_retries = 3
         self.retry_delay = 1  # seconds

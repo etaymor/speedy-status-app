@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends
 from typing import Optional
 from datetime import datetime, timedelta
-from ..auth.oauth2 import get_current_user
+from ..auth.dependencies import get_current_user
 from ..services.summary_service import summary_service
 from ..database import prisma
 from prisma.models import User, WeeklySummary

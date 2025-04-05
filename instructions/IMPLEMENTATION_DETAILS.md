@@ -17,13 +17,7 @@ The authentication system uses a dual-approach strategy:
   - Refresh tokens (7-day expiry)
 - Rate limiting implemented using Redis (5 attempts per 5 minutes)
 
-```python
-# Key configuration (auth_config.py)
-SECRET_KEY: str = os.getenv("SECRET_KEY", "your-secret-key-for-jwt")
-ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
-REFRESH_TOKEN_EXPIRE_DAYS: int = 7
-ALGORITHM: str = "HS256"
-```
+handled in .env
 
 ### Magic Link System
 
@@ -259,25 +253,7 @@ enum MembershipStatus {
 
 ## Environment Variables
 
-Required environment variables:
-
-```bash
-# Database
-DATABASE_URL="postgresql://user:password@localhost:5432/speedy_status_db"
-
-# Authentication
-SECRET_KEY="your-secure-secret-key"
-ACCESS_TOKEN_EXPIRE_MINUTES=30
-REFRESH_TOKEN_EXPIRE_DAYS=7
-
-# Rate Limiting
-REDIS_URL="redis://localhost:6379"
-LOGIN_RATE_LIMIT=5
-LOGIN_RATE_LIMIT_PERIOD=300
-
-# Application
-BASE_URL="http://localhost:3000"  # Frontend URL for magic links
-```
+Required environment variables are in the .env file
 
 ## Testing
 
@@ -499,6 +475,164 @@ Key test areas:
    - Clear error messages
    - Loading states
    - User-friendly timezone selection
+
+## AI Summary Generation System
+
+### Overview
+
+The AI summary generation system uses OpenAI's GPT model to generate concise team status summaries. The system includes:
+
+- Automatic summary generation based on team submissions
+- Configurable trigger conditions
+- Regeneration support for late updates
+- Error handling with retries
+
+### AI Service
+
+```python
+class AIService:
+    def __init__(self):
+        self.client = AsyncOpenAI(api_key=settings.openai_api_key)
+        self.model = settings.openai_model
+        self.max_retries = settings.openai_max_retries
+        self.retry_delay = settings.openai_retry_delay
+
+    async def generate_team_summary(self, submissions: List[Submission]) -> str:
+        """Generate a team summary with retry logic."""
+        system_prompt = """
+        You are a professional team manager summarizing weekly updates.
+        Write a business-casual summary at a high school reading level.
+        Include an overview and bulleted highlights of key achievements.
+        Keep the tone positive and forward-looking.
+        """
+
+        user_prompt = f"""
+        Here are the team's weekly updates:
+        {self._format_submissions(submissions)}
+        Please provide a summary of the team's progress and upcoming work.
+        """
+
+        # Implements exponential backoff retry logic
+```
+
+### Summary Service
+
+The summary service handles the business logic for when and how to generate summaries:
+
+```python
+class SummaryService:
+    def should_generate_summary(self, submissions: List[Submission]) -> bool:
+        """Check if summary should be generated based on submissions."""
+        # Triggers:
+        # 1. All team members have submitted
+        # 2. 24 hours have passed since first submission
+
+    async def generate_summary(self, submissions: List[Submission], trigger_type: TriggerType) -> WeeklySummary:
+        """Generate and store a new summary or update existing one."""
+        # Handles summary generation and storage
+        # Includes error handling and validation
+```
+
+### Trigger Types
+
+```python
+class TriggerType(str, Enum):
+    """Enum for summary trigger types."""
+    ALL_SUBMITTED = "ALL_SUBMITTED"
+    TIMEOUT = "TIMEOUT"
+    MANUAL = "MANUAL"
+```
+
+### Database Model
+
+```prisma
+model WeeklySummary {
+    id             String          @id @default(uuid())
+    teamId         String         @map("team_id")
+    weekStartDate  DateTime       @map("week_start_date")
+    summaryText    String         @db.Text @map("summary_text")
+    generatedAt    DateTime       @default(now()) @map("generated_at")
+    updatedAt      DateTime       @updatedAt @map("updated_at")
+    triggerType    TriggerType    @map("trigger_type")
+    team           Team           @relation(fields: [teamId], references: [id])
+
+    @@unique([teamId, weekStartDate])
+    @@map("weekly_summaries")
+}
+```
+
+### API Endpoints
+
+```python
+# Summary generation endpoints
+POST /api/v1/summaries/generate/{team_id}  # Force generate summary
+GET /api/v1/summaries/{team_id}            # Get latest summary
+GET /api/v1/summaries/{team_id}/history    # Get summary history
+```
+
+### Error Handling
+
+The system handles various error scenarios:
+
+1. OpenAI API errors:
+
+   - Rate limiting with exponential backoff
+   - Maximum retry attempts
+   - Fallback error responses
+
+2. Data validation:
+   - Missing or invalid submissions
+   - Duplicate summaries
+   - Invalid team or date ranges
+
+### Testing Strategy
+
+Comprehensive test suite covering:
+
+```python
+@pytest.mark.asyncio
+async def test_generate_team_summary_success()
+async def test_generate_team_summary_retry_on_rate_limit()
+async def test_generate_team_summary_max_retries_exceeded()
+async def test_should_generate_summary_all_submitted()
+async def test_should_generate_summary_timeout()
+async def test_should_not_generate_summary_incomplete()
+async def test_generate_summary_new()
+async def test_generate_summary_update_existing()
+async def test_check_and_generate_if_needed()
+```
+
+### Environment Variables
+
+```bash
+# OpenAI Configuration
+OPENAI_API_KEY="your-openai-api-key"
+OPENAI_MODEL="gpt-4o"  # Model to use
+OPENAI_MAX_RETRIES=3   # Maximum retry attempts
+OPENAI_RETRY_DELAY=1   # Base delay in seconds
+```
+
+### Best Practices
+
+1. AI Integration:
+
+   - Secure API key handling
+   - Proper prompt engineering
+   - Retry logic for reliability
+   - Error handling and logging
+
+2. Summary Management:
+
+   - Efficient storage and retrieval
+   - Version tracking
+   - Clear trigger conditions
+   - Proper data cleanup
+
+3. Testing:
+   - Mock AI responses
+   - Test various trigger scenarios
+   - Validate retry logic
+   - Check error handling
 
 ## Admin API
 

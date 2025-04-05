@@ -4,7 +4,7 @@ import logging
 from contextlib import asynccontextmanager
 from .auth import auth_router, magic_links_router
 from .auth.rate_limiter import setup_rate_limiter
-from .routers import team, admin, submission, users
+from .routers import team, admin, submission, users, summaries
 from .database import prisma
 from fastapi_limiter import FastAPILimiter
 import redis.asyncio as redis
@@ -67,6 +67,7 @@ app.include_router(team.router)
 app.include_router(admin.router)
 app.include_router(submission.router)
 app.include_router(users.router)
+app.include_router(summaries.router)
 
 @app.get("/health")
 async def health_check():

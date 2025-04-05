@@ -106,6 +106,7 @@ model WeeklySummary {
   triggerType    TriggerType    @map("trigger_type")
   team           Team           @relation(fields: [teamId], references: [id])
 
+  @@unique([teamId, weekStartDate])
   @@map("weekly_summaries")
 }
 
